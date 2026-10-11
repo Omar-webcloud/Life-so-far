@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { dictionaries, formatNumber, headlineText, type Lang } from '@/lib/i18n'
+import { formatNumber, headlineText, type Lang } from '@/lib/i18n'
 
 export const CARD_W = 1080
 export const CARD_H = 1350
@@ -10,6 +10,7 @@ const MUTED = '#6a6358'
 const GOLD = '#b08d4a'
 const GOLD_TEXT = '#85652a'
 const IVORY = '#faf6ec'
+const CREAM = '#f3ecd9'
 
 export type CardMilestone = {
   id: string
@@ -122,12 +123,11 @@ function ItemText({
           {when}
         </div>
       )}
-      <div style={{ ...display, ...clamp(mt.titleLines), fontSize: mt.titleSize, lineHeight: 1.25, color: INK, fontWeight: 600 }}>
-        {m.emoji ? `${m.emoji}\u00A0` : ''}
-        {m.title}
+      <div style={{ ...display, ...clamp(mt.titleLines), fontSize: mt.titleSize, lineHeight: 1.25, fontWeight: 600 }}>
+        {m.emoji ? `${m.emoji} ${m.title}` : m.title}
       </div>
-      {mt.descLines > 0 && showDescriptions && m.description.trim() && (
-        <div style={{ ...sans, ...clamp(mt.descLines), fontSize: mt.descSize, lineHeight: 1.4, color: MUTED, marginTop: 2 }}>
+      {mt.descLines > 0 && m.description.trim() && showDescriptions && (
+        <div style={{ ...sans, ...clamp(mt.descLines), fontSize: mt.descSize, lineHeight: 1.4, color: MUTED, marginTop: 4 }}>
           {m.description.trim()}
         </div>
       )}
@@ -142,10 +142,9 @@ function Marker({ size }: { size: number }) {
         width: size,
         height: size,
         borderRadius: '50%',
-        background: IVORY,
-        border: `3px solid ${GOLD}`,
-        boxShadow: `0 0 0 6px ${IVORY}`,
+        background: GOLD,
         flexShrink: 0,
+        boxShadow: `0 0 0 ${size * 0.35}px ${GOLD}22`,
       }}
     />
   )
@@ -168,99 +167,117 @@ function Timeline({
   centered: boolean
   maxTitle: number
 }) {
-  const n = Math.max(items.length, 1)
-  const rowH = Math.min(height / n, 150)
-  const used = rowH * items.length
-  const offset = (height - used) / 2
-  const anyWhen = showDates && items.some((m) => m.when.trim())
-  const anyDesc = showDescriptions && items.some((m) => m.description.trim())
-  const colW = centered ? (width - 28 - 72) / 2 : width - 58
-  const maxLen = Math.max(1, ...items.map((m) => m.title.length + (m.emoji ? 2 : 0)))
-  const mt = metricsFor(rowH, anyWhen, anyDesc, showDescriptions, maxTitle, colW, maxLen)
+  if (items.length === 0) return null
+  const rowH = Math.floor(height / items.length)
+  const markerCol = 28
+  const colW = centered ? (width - markerCol - 36 * 2) / 2 : width - markerCol - 36
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _unused = colW
+
+  const itemMt = (m: CardMilestone): Metrics => {
+    const maxLen = m.title.length + (m.description?.length || 0) * 0.6
+    return metricsFor(
+      rowH,
+      showDates && !!m.when.trim(),
+      !!m.description.trim(),
+      showDescriptions,
+      maxTitle,
+      centered ? (width - markerCol - 72) / 2 : width - markerCol - 36,
+      maxLen,
+    )
+  }
 
   return (
-    <div style={{ position: 'relative', width, height }}>
-      {items.length > 1 && (
-        <div
-          style={{
-            position: 'absolute',
-            top: offset + rowH / 2,
-            height: used - rowH,
-            width: 2,
-            left: centered ? width / 2 - 1 : 11,
-            background: `linear-gradient(${GOLD}, ${GOLD})`,
-            opacity: 0.55,
-          }}
-        />
-      )}
-      <div style={{ position: 'absolute', top: offset, left: 0, width }}>
-        {items.map((m, i) => {
-          const itemMt = {
-            ...mt,
-            showWhen: showDates && !!m.when.trim(),
-          }
-          if (centered) {
-            const left = i % 2 === 0
-            return (
-              <div
-                key={m.id}
-                style={{
-                  height: rowH,
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 28px 1fr',
-                  columnGap: 36,
-                  alignItems: 'center',
-                }}
-              >
-                <div>{left && <ItemText m={m} mt={itemMt} align="right" showDates={showDates} showDescriptions={showDescriptions} />}</div>
-                <Marker size={22} />
-                <div>{!left && <ItemText m={m} mt={itemMt} align="left" showDates={showDates} showDescriptions={showDescriptions} />}</div>
-              </div>
-            )
-          }
+    <div style={{ position: 'relative', height, overflow: 'hidden' }}>
+      {/* Vertical timeline line */}
+      <div
+        style={{
+          position: 'absolute',
+          left: centered ? width / 2 - 1 : 11,
+          top: 0,
+          bottom: 0,
+          width: 2,
+          background: `linear-gradient(to bottom, ${GOLD}00, ${GOLD}55 10%, ${GOLD}55 90%, ${GOLD}00)`,
+        }}
+      />
+      {items.map((m, i) => {
+        const itemMtVal = itemMt(m)
+        itemMtVal.showWhen = showDates && !!m.when.trim()
+        if (centered) {
+          const left = i % 2 === 0
           return (
-            <div key={m.id} style={{ height: rowH, display: 'flex', alignItems: 'center', gap: 36 }}>
+            <div
+              key={m.id}
+              style={{
+                height: rowH,
+                display: 'grid',
+                gridTemplateColumns: '1fr 28px 1fr',
+                columnGap: 36,
+                alignItems: 'center',
+              }}
+            >
+              <div>{left && <ItemText m={m} mt={itemMtVal} align="right" showDates={showDates} showDescriptions={showDescriptions} />}</div>
               <Marker size={22} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <ItemText m={m} mt={itemMt} align="left" showDates={showDates} showDescriptions={showDescriptions} />
-              </div>
+              <div>{!left && <ItemText m={m} mt={itemMtVal} align="left" showDates={showDates} showDescriptions={showDescriptions} />}</div>
             </div>
           )
-        })}
-      </div>
+        }
+        return (
+          <div key={m.id} style={{ height: rowH, display: 'flex', alignItems: 'center', gap: 36 }}>
+            <Marker size={22} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <ItemText m={m} mt={itemMtVal} align="left" showDates={showDates} showDescriptions={showDescriptions} />
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }
 
-function Footer({ lang, brand }: { lang: Lang; brand?: string }) {
+// Card footer always shows the brand in English
+function Footer({ brand }: { brand?: string }) {
   return (
     <div
       style={{
         ...sans,
-        height: 52,
+        height: 60,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        borderTop: `1px solid ${GOLD}66`,
-        fontSize: 20,
-        letterSpacing: '0.18em',
-        textTransform: 'uppercase',
-        color: MUTED,
+        borderTop: `1px solid ${GOLD}55`,
+        background: `linear-gradient(to right, ${IVORY}, ${CREAM}88, ${IVORY})`,
+        paddingTop: 6,
       }}
     >
       <span style={{ ...display, letterSpacing: 0, textTransform: 'none', fontSize: 26, fontStyle: 'italic', color: INK }}>
-        {dictionaries[lang].appName}
+        Life So Far
       </span>
-      {brand && <span>{brand}</span>}
+      {brand && (
+        <span
+          style={{
+            fontSize: 18,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color: MUTED,
+            opacity: 0.75,
+          }}
+        >
+          {brand}
+        </span>
+      )}
     </div>
   )
 }
 
 export function LifeCard(props: LifeCardProps) {
   const { lang, nickname, age, showAge, showDates, showDescriptions, photo, photoZoom, photoX, photoY, brand } = props
+  const { dictionaries } = require('@/lib/i18n')
   const t = dictionaries[lang]
   const items = props.milestones.slice(0, 15)
-  const title = props.cardTitle.trim() || t.defaultCardTitle
+  // Card title always defaults to English "My Life So Far"
+  const title = props.cardTitle.trim() || 'My Life So Far'
   const headline = headlineText(items.length, age, showAge, lang)
   const hasPhoto = !!photo
   const innerW = CARD_W - PAD * 2
@@ -270,46 +287,118 @@ export function LifeCard(props: LifeCardProps) {
     position: 'relative',
     width: CARD_W,
     height: CARD_H,
-    background: `radial-gradient(120% 80% at 50% 0%, #fffdf7 0%, ${IVORY} 55%, #f3ecd9 100%)`,
+    background: `radial-gradient(ellipse 110% 70% at 50% 0%, #fffef9 0%, ${IVORY} 45%, #ede5cc 100%)`,
     color: INK,
     overflow: 'hidden',
     ...sans,
   }
 
+  // Outer decorative frame
   const frame = (
-    <div
-      style={{
-        position: 'absolute',
-        inset: 28,
-        border: `1.5px solid ${GOLD}`,
-        borderRadius: 4,
-        opacity: 0.7,
-        pointerEvents: 'none',
-      }}
-    />
+    <>
+      {/* Main border */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 24,
+          border: `1.5px solid ${GOLD}`,
+          borderRadius: 6,
+          opacity: 0.65,
+          pointerEvents: 'none',
+        }}
+      />
+      {/* Inner hairline */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 30,
+          border: `0.5px solid ${GOLD}`,
+          borderRadius: 4,
+          opacity: 0.3,
+          pointerEvents: 'none',
+        }}
+      />
+      {/* Subtle corner ornaments */}
+      {[
+        { top: 32, left: 32 },
+        { top: 32, right: 32 },
+        { bottom: 32, left: 32 },
+        { bottom: 32, right: 32 },
+      ].map((pos, i) => (
+        <div
+          key={i}
+          style={{
+            position: 'absolute',
+            ...pos,
+            width: 16,
+            height: 16,
+            border: `1.5px solid ${GOLD}`,
+            opacity: 0.55,
+            pointerEvents: 'none',
+          }}
+        />
+      ))}
+    </>
   )
 
   if (hasPhoto) {
-    const headerH = 410
+    const headerH = 420
     const gap = 44
-    const timelineH = CARD_H - PAD * 2 - headerH - gap - 52 - 24
+    const timelineH = CARD_H - PAD * 2 - headerH - gap - 60 - 24
     const tSize = titleSizeFor(title, 68, 16)
+    // Photo circle dimensions
+    const photoSize = 300
+    const photoRadius = photoSize / 2  // fully circular
+
     return (
       <div style={base} data-variant="photo">
         {frame}
         <div style={{ position: 'absolute', left: PAD, top: PAD, width: innerW, height: CARD_H - PAD * 2 }}>
-          <div style={{ height: headerH, display: 'flex', gap: 52, alignItems: 'stretch' }}>
-            <div style={{ position: 'relative', width: 300, height: headerH, flexShrink: 0 }}>
+          <div style={{ height: headerH, display: 'flex', gap: 52, alignItems: 'center' }}>
+
+            {/* Photo — fully round */}
+            <div style={{ position: 'relative', width: photoSize, height: photoSize, flexShrink: 0 }}>
+              {/* Outer glow ring */}
               <div
                 style={{
                   position: 'absolute',
-                  inset: -12,
-                  borderRadius: '162px 162px 18px 18px',
-                  border: `1.5px solid ${GOLD}`,
-                  opacity: 0.8,
+                  inset: -10,
+                  borderRadius: '50%',
+                  background: `radial-gradient(circle, ${GOLD}33 0%, transparent 70%)`,
+                  pointerEvents: 'none',
                 }}
               />
-              <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: '150px 150px 8px 8px', background: '#e8dfca' }}>
+              {/* Gold ring border */}
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: -6,
+                  borderRadius: '50%',
+                  border: `2px solid ${GOLD}`,
+                  opacity: 0.85,
+                  pointerEvents: 'none',
+                }}
+              />
+              {/* Inner ring accent */}
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: -1,
+                  borderRadius: '50%',
+                  border: `1px solid ${GOLD}55`,
+                  pointerEvents: 'none',
+                }}
+              />
+              {/* Photo clip */}
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  overflow: 'hidden',
+                  borderRadius: '50%',
+                  background: '#e8dfca',
+                }}
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={photo}
@@ -326,17 +415,45 @@ export function LifeCard(props: LifeCardProps) {
                 />
               </div>
             </div>
+
+            {/* Header text */}
             <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <div style={{ fontSize: 20, letterSpacing: '0.28em', textTransform: 'uppercase', color: GOLD_TEXT, fontWeight: 600, marginBottom: 18, overflowWrap: 'anywhere' }}>
+              <div
+                style={{
+                  fontSize: 19,
+                  letterSpacing: '0.30em',
+                  textTransform: 'uppercase',
+                  color: GOLD_TEXT,
+                  fontWeight: 600,
+                  marginBottom: 16,
+                  overflowWrap: 'anywhere',
+                }}
+              >
                 {nick || t.eyebrow}
               </div>
-              <div style={{ ...display, ...clamp(3), fontSize: tSize, lineHeight: 1.1, fontWeight: 600, letterSpacing: '-0.01em' }}>{title}</div>
-              <div style={{ width: 72, height: 2, background: GOLD, margin: '26px 0' }} />
-              <div style={{ ...display, ...clamp(2), fontSize: 38, lineHeight: 1.2, fontStyle: 'italic', color: GOLD_TEXT }}>{headline}</div>
-              <div style={{ ...clamp(2), fontSize: 22, lineHeight: 1.45, color: MUTED, marginTop: 16 }}>{t.tagline}</div>
+              <div style={{ ...display, ...clamp(3), fontSize: tSize, lineHeight: 1.1, fontWeight: 700, letterSpacing: '-0.01em', color: INK }}>
+                {title}
+              </div>
+
+              {/* Gold rule with diamond accent */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '22px 0' }}>
+                <div style={{ flex: 1, height: 1.5, background: `linear-gradient(to right, ${GOLD}, ${GOLD}44)` }} />
+                <div style={{ width: 9, height: 9, background: GOLD, transform: 'rotate(45deg)', flexShrink: 0 }} />
+              </div>
+
+              <div style={{ ...display, ...clamp(2), fontSize: 36, lineHeight: 1.2, fontStyle: 'italic', color: GOLD_TEXT, fontWeight: 400 }}>
+                {headline}
+              </div>
+              <div style={{ ...sans, ...clamp(2), fontSize: 21, lineHeight: 1.5, color: MUTED, marginTop: 14, fontStyle: 'italic' }}>
+                {t.tagline}
+              </div>
             </div>
           </div>
-          <div style={{ marginTop: gap }}>
+
+          {/* Divider line between header and timeline */}
+          <div style={{ height: 1, background: `linear-gradient(to right, transparent, ${GOLD}44, transparent)`, margin: `${gap / 2}px 0` }} />
+
+          <div style={{ marginTop: gap / 2 }}>
             <Timeline
               items={items}
               height={timelineH}
@@ -348,7 +465,7 @@ export function LifeCard(props: LifeCardProps) {
             />
           </div>
           <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
-            <Footer lang={lang} brand={brand} />
+            <Footer brand={brand} />
           </div>
         </div>
       </div>
@@ -358,12 +475,13 @@ export function LifeCard(props: LifeCardProps) {
   // Variant B: no picture, typographic composition
   const headerH = 410
   const gap = 36
-  const timelineH = CARD_H - PAD * 2 - headerH - gap - 52 - 24
+  const timelineH = CARD_H - PAD * 2 - headerH - gap - 60 - 24
   const centered = items.length <= 8
   const tSize = titleSizeFor(title, 96, 14)
   return (
     <div style={base} data-variant="typographic">
       {frame}
+      {/* Large watermark number */}
       <div
         aria-hidden
         style={{
@@ -375,7 +493,7 @@ export function LifeCard(props: LifeCardProps) {
           lineHeight: 1,
           fontWeight: 700,
           color: GOLD,
-          opacity: 0.1,
+          opacity: 0.07,
           letterSpacing: '-0.04em',
         }}
       >
@@ -383,31 +501,52 @@ export function LifeCard(props: LifeCardProps) {
       </div>
       <div style={{ position: 'absolute', left: PAD, top: PAD, width: innerW, height: CARD_H - PAD * 2 }}>
         <div style={{ height: headerH, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
-          <div style={{ fontSize: 21, letterSpacing: '0.32em', textTransform: 'uppercase', color: GOLD_TEXT, fontWeight: 600, marginBottom: 22, overflowWrap: 'anywhere' }}>
+          <div
+            style={{
+              fontSize: 20,
+              letterSpacing: '0.32em',
+              textTransform: 'uppercase',
+              color: GOLD_TEXT,
+              fontWeight: 600,
+              marginBottom: 22,
+              overflowWrap: 'anywhere',
+            }}
+          >
             {nick || t.eyebrow}
           </div>
-          <div style={{ ...display, ...clamp(2), fontSize: tSize, lineHeight: 1.05, fontWeight: 600, letterSpacing: '-0.015em', maxWidth: innerW }}>{title}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 18, margin: '28px 0' }}>
-            <div style={{ width: 96, height: 1.5, background: GOLD }} />
-            <div style={{ width: 12, height: 12, background: GOLD, transform: 'rotate(45deg)' }} />
-            <div style={{ width: 96, height: 1.5, background: GOLD }} />
+          <div style={{ ...display, ...clamp(2), fontSize: tSize, lineHeight: 1.05, fontWeight: 700, letterSpacing: '-0.015em', maxWidth: innerW, color: INK }}>
+            {title}
           </div>
-          <div style={{ ...display, ...clamp(2), fontSize: 50, lineHeight: 1.15, fontStyle: 'italic', color: GOLD_TEXT, maxWidth: innerW }}>{headline}</div>
-          <div style={{ ...clamp(2), fontSize: 24, lineHeight: 1.45, color: MUTED, marginTop: 20 }}>{t.tagline}</div>
+
+          {/* Decorative divider */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 18, margin: '28px 0' }}>
+            <div style={{ width: 96, height: 1.5, background: `linear-gradient(to left, ${GOLD}, ${GOLD}22)` }} />
+            <div style={{ width: 12, height: 12, background: GOLD, transform: 'rotate(45deg)', flexShrink: 0 }} />
+            <div style={{ width: 96, height: 1.5, background: `linear-gradient(to right, ${GOLD}, ${GOLD}22)` }} />
+          </div>
+
+          <div style={{ ...display, ...clamp(2), fontSize: 50, lineHeight: 1.15, fontStyle: 'italic', color: GOLD_TEXT, maxWidth: innerW, fontWeight: 400 }}>
+            {headline}
+          </div>
+          <div style={{ ...sans, ...clamp(2), fontSize: 23, lineHeight: 1.45, color: MUTED, marginTop: 20, fontStyle: 'italic' }}>
+            {t.tagline}
+          </div>
         </div>
-        <div style={{ marginTop: gap }}>
-          <Timeline
-            items={items}
-            height={timelineH}
-            width={innerW}
-            showDates={showDates}
-            showDescriptions={showDescriptions}
-            centered={centered}
-            maxTitle={centered ? 42 : 38}
-          />
-        </div>
+
+        {/* Horizontal rule */}
+        <div style={{ height: 1, background: `linear-gradient(to right, transparent, ${GOLD}44, transparent)`, marginBottom: gap }} />
+
+        <Timeline
+          items={items}
+          height={timelineH}
+          width={innerW}
+          showDates={showDates}
+          showDescriptions={showDescriptions}
+          centered={centered}
+          maxTitle={centered ? 42 : 38}
+        />
         <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
-          <Footer lang={lang} brand={brand} />
+          <Footer brand={brand} />
         </div>
       </div>
     </div>

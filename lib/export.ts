@@ -32,14 +32,66 @@ export async function exportCard(node: HTMLElement, format: ExportFormat): Promi
   return blob
 }
 
+/**
+ * Cross-browser download with two-stage fallback:
+ *
+ * 1. File System Access API (Chrome 86+, Edge 86+)
+ *    Shows the native OS "Save as…" dialog, so the user can choose exactly
+ *    where to save, and the filename with extension is always pre-filled.
+ *
+ * 2. Anchor element with `download` attribute (Firefox, Safari, all others)
+ *    Creates an invisible <a> with a blob URL, clicks it, then cleans up.
+ *    The anchor is positioned off-screen (not display:none) so Firefox
+ *    will honour the click. The cleanup is delayed 5 s so Firefox has time
+ *    to start the download before the object URL is revoked.
+ */
 export function triggerDownload(blob: Blob, filename: string) {
+  const mimeType = blob.type || (filename.endsWith('.png') ? 'image/png' : 'image/jpeg')
+  const ext = filename.endsWith('.png') ? 'png' : 'jpg'
+
+  // Stage 1 — File System Access API
+  if (typeof window !== 'undefined' && 'showSaveFilePicker' in window) {
+    ;(window as Window & { showSaveFilePicker: (opts: object) => Promise<FileSystemFileHandle> })
+      .showSaveFilePicker({
+        suggestedName: filename,
+        types: [{ description: `${ext.toUpperCase()} Image`, accept: { [mimeType]: ['.' + ext] } }],
+      })
+      .then(async (handle) => {
+        const writable = await (handle as any).createWritable()
+        await writable.write(blob)
+        await writable.close()
+      })
+      .catch((e: Error) => {
+        // AbortError means the user cancelled — that's fine.
+        if (e.name !== 'AbortError') _anchorDownload(blob, filename)
+      })
+    return
+  }
+
+  // Stage 2 — Anchor element download
+  _anchorDownload(blob, filename)
+}
+
+function _anchorDownload(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = filename
+  a.download = filename   // includes the extension, e.g. "life-so-far.png"
+  a.type = blob.type
   a.rel = 'noopener'
+  // Must be attached to the DOM for Firefox; keep it off-screen so it's invisible
+  Object.assign(a.style, {
+    position: 'fixed',
+    top: '-9999px',
+    left: '-9999px',
+    opacity: '0',
+    pointerEvents: 'none',
+  })
   document.body.appendChild(a)
   a.click()
-  a.remove()
-  setTimeout(() => URL.revokeObjectURL(url), 60_000)
+  // Delay cleanup so Firefox has time to begin the download
+  setTimeout(() => {
+    a.remove()
+    URL.revokeObjectURL(url)
+  }, 5000)
 }

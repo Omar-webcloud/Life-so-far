@@ -16,7 +16,7 @@ export function Landing() {
   return (
     <div className="min-h-dvh">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-        <span className="font-display text-xl font-semibold italic">{t.appName}</span>
+        <span className="font-display text-xl font-semibold italic">Life So Far</span>
         <LangSwitch />
       </header>
 
@@ -34,12 +34,6 @@ export function Landing() {
               >
                 {t.ctaCreate}
               </Link>
-              <a
-                href="#example"
-                className="inline-flex min-h-12 items-center justify-center rounded-full border border-gold px-7 text-base font-medium text-ink transition-colors hover:bg-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-deep"
-              >
-                {t.ctaExample}
-              </a>
             </div>
             <p className="mt-5 flex items-center justify-center gap-2 text-sm text-ink-soft lg:justify-start">
               <Lock className="size-4 text-gold-deep" aria-hidden="true" />

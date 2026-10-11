@@ -43,7 +43,7 @@ export function Editor() {
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-3">
           <Link href="/" className="inline-flex min-h-11 items-center gap-2 text-sm font-medium" aria-label={t.back}>
             <ArrowLeft className="size-4" aria-hidden="true" />
-            <span className="font-display text-lg italic">{t.appName}</span>
+            <span className="font-display text-lg italic">Life So Far</span>
           </Link>
           <LangSwitch />
         </div>
