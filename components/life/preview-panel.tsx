@@ -142,23 +142,48 @@ export function PreviewPanel() {
     setBusy(format)
     notify('')
     try {
-      const blob = await makeBlob(format)
       const ext = format === 'png' ? 'png' : 'jpg'
       const filename = `life-so-far.${ext}`
 
-      if (openSaveScreen || inApp) {
-        // In-app browsers (Facebook, Instagram…) block programmatic downloads.
-        // Show the image in a modal so the user can long-press to save it.
+      if (openSaveScreen) {
+        // Fallback save screen modal for manual long-press saving
+        const blob = await makeBlob(format)
         const objUrl = URL.createObjectURL(blob)
         setSaveUrl(objUrl)
-      } else {
-        // Desktop / standard mobile browsers: trigger a real file download.
-        // triggerDownload uses the File System Access API (Chrome/Edge native
-        // Save dialog) and falls back to anchor-click for Firefox & Safari.
-        triggerDownload(blob, filename)
-        notify(format === 'png' ? 'PNG saved to your downloads folder.' : 'JPG saved to your downloads folder.')
-        setTimeout(() => notify(''), 4000)
+        return
       }
+
+      // Method 2: Server-Side Download Route (In-App Browsers / WebViews)
+      if (isInAppBrowser()) {
+        let cardId: string | null = null
+        try {
+          const serverUrl = await ensureServerCard()
+          if (serverUrl) {
+            const parsed = new URL(serverUrl, window.location.origin)
+            cardId = parsed.searchParams.get('id')
+          }
+        } catch {
+          // Fallback to URL-encoded timeline payload
+        }
+
+        const url = new URL('/api/download', window.location.origin)
+        if (cardId) url.searchParams.set('id', cardId)
+        if (encodedData) url.searchParams.set('d', encodedData)
+        url.searchParams.set('format', format)
+
+        // Trigger navigation
+        window.location.href = url.toString()
+
+        // Keep busy indicator briefly to avoid repeated clicks
+        setTimeout(() => setBusy(null), 2500)
+        return
+      }
+
+      // Method 1: Client-Side Download (<a download>) for standard browsers
+      const blob = await makeBlob(format)
+      await triggerDownload(blob, filename)
+      notify(format === 'png' ? 'PNG saved to your downloads folder.' : 'JPG saved to your downloads folder.')
+      setTimeout(() => notify(''), 4000)
     } catch {
       notify(t.exportFailed, true)
     } finally {

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Copy, Check, ArrowRight, Sparkles } from 'lucide-react'
+import { Copy, Check, ArrowRight, Sparkles, Download } from 'lucide-react'
 import { ScaledCard } from './scaled-card'
 import type { Lang } from '@/lib/i18n'
 
@@ -35,6 +35,16 @@ export function SharedCardView({ card }: { card: SharedCardData }) {
     } catch {
       // fallback
     }
+  }
+
+  const downloadCard = () => {
+    const url = new URL('/api/download', window.location.origin)
+    const currentParams = new URLSearchParams(window.location.search)
+    const id = currentParams.get('id')
+    const d = currentParams.get('d')
+    if (id) url.searchParams.set('id', id)
+    if (d) url.searchParams.set('d', d)
+    window.location.href = url.toString()
   }
 
   const isBn = card.lang === 'bn'
@@ -90,13 +100,14 @@ export function SharedCardView({ card }: { card: SharedCardData }) {
 
         {/* CTAs */}
         <div className="mt-8 space-y-3">
-          <Link
-            href="/create"
+          <button
+            type="button"
+            onClick={downloadCard}
             className="flex w-full items-center justify-center gap-2 rounded-full bg-ink py-3.5 px-6 text-base font-medium text-ivory hover:bg-ink/90 transition-colors shadow-md"
           >
-            <span>{isBn ? 'আপনার নিজের জীবনের গল্প তৈরি করুন' : 'Create Your Own Life Story'}</span>
-            <ArrowRight className="size-4" />
-          </Link>
+            <Download className="size-4" />
+            <span>{isBn ? 'কার্ড ডাউনলোড করুন' : 'Download Card Image'}</span>
+          </button>
 
           <button
             type="button"
@@ -106,6 +117,14 @@ export function SharedCardView({ card }: { card: SharedCardData }) {
             {copied ? <Check className="size-4 text-emerald-700" /> : <Copy className="size-4 text-gold-deep" />}
             <span>{copied ? (isBn ? 'লিংক কপি হয়েছে!' : 'Link copied to clipboard!') : (isBn ? 'এই কার্ডের লিংক কপি করুন' : 'Copy link to this card')}</span>
           </button>
+
+          <Link
+            href="/create"
+            className="flex w-full items-center justify-center gap-2 rounded-full border border-ink/20 bg-cream/40 py-3 px-6 text-sm font-medium text-ink hover:bg-cream transition-colors"
+          >
+            <span>{isBn ? 'আপনার নিজের জীবনের গল্প তৈরি করুন' : 'Create Your Own Life Story'}</span>
+            <ArrowRight className="size-4" />
+          </Link>
         </div>
 
         <div className="mt-10 rounded-xl border border-gold/30 bg-cream/70 p-5 text-center">
