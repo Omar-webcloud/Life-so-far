@@ -6,7 +6,7 @@ import { processPhoto, PhotoError } from '@/lib/image'
 import { useLife } from '@/lib/life-store'
 
 export function PhotoSection() {
-  const { photo, photoSaved, state, update, setPhoto, t } = useLife()
+  const { photo, photoSaved, update, setPhoto, t } = useLife()
   const input = useRef<HTMLInputElement>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -20,7 +20,7 @@ export function PhotoSection() {
     try {
       const data = await processPhoto(file)
       setPhoto(data)
-      update({ photoZoom: 1, photoX: 50, photoY: 40 })
+      update({ photoZoom: 1, photoX: 50, photoY: 50 })
     } catch (err) {
       const code = err instanceof PhotoError ? err.code : 'corrupt'
       setError(code === 'type' ? t.photoErrType : code === 'size' ? t.photoErrSize : t.photoErrCorrupt)
@@ -28,21 +28,6 @@ export function PhotoSection() {
       setBusy(false)
     }
   }
-
-  const slider = (label: string, value: number, min: number, max: number, step: number, key: 'photoZoom' | 'photoX' | 'photoY') => (
-    <label className="flex items-center gap-3 text-sm text-ink-soft">
-      <span className="w-36 shrink-0">{label}</span>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => update({ [key]: Number(e.target.value) })}
-        className="h-6 w-full accent-gold-deep"
-      />
-    </label>
-  )
 
   return (
     <section aria-labelledby="photo-h" className="rounded-xl border border-gold/30 bg-white/50 p-5">
@@ -77,11 +62,6 @@ export function PhotoSection() {
                 {t.removePhoto}
               </button>
             </div>
-          </div>
-          <div className="space-y-1">
-            {slider(t.photoZoom, state.photoZoom, 1, 2.5, 0.05, 'photoZoom')}
-            {slider(t.photoHoriz, state.photoX, 0, 100, 1, 'photoX')}
-            {slider(t.photoVert, state.photoY, 0, 100, 1, 'photoY')}
           </div>
           {!photoSaved && <p className="text-sm text-gold-deep">{t.photoNotSaved}</p>}
         </div>

@@ -236,32 +236,40 @@ function Timeline({
   )
 }
 
-// Card footer always shows the brand in English
-function Footer({ brand }: { brand?: string }) {
+// Card hallmark with small favicon emblem
+function CardFavicon({ brand }: { brand?: string }) {
   return (
     <div
       style={{
         ...sans,
-        height: 60,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        borderTop: `1px solid ${GOLD}55`,
-        background: `linear-gradient(to right, ${IVORY}, ${CREAM}88, ${IVORY})`,
-        paddingTop: 6,
+        justifyContent: 'center',
+        gap: 10,
+        height: 38,
       }}
     >
-      <span style={{ ...display, letterSpacing: 0, textTransform: 'none', fontSize: 26, fontStyle: 'italic', color: INK }}>
-        Life So Far
-      </span>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/life-so-far-logo.png"
+        alt="Life So Far"
+        style={{
+          width: 32,
+          height: 32,
+          borderRadius: 7,
+          boxShadow: '0 1px 3px rgba(42, 39, 35, 0.12)',
+          border: `1px solid ${GOLD}44`,
+          display: 'block',
+        }}
+      />
       {brand && (
         <span
           style={{
-            fontSize: 18,
-            letterSpacing: '0.18em',
+            fontSize: 15,
+            letterSpacing: '0.16em',
             textTransform: 'uppercase',
             color: MUTED,
-            opacity: 0.75,
+            opacity: 0.65,
           }}
         >
           {brand}
@@ -344,7 +352,8 @@ export function LifeCard(props: LifeCardProps) {
   if (hasPhoto) {
     const headerH = 420
     const gap = 44
-    const timelineH = CARD_H - PAD * 2 - headerH - gap - 60 - 24
+    const markH = 38
+    const timelineH = CARD_H - PAD * 2 - headerH - gap - markH - 20
     const tSize = titleSizeFor(title, 68, 16)
     // Photo circle dimensions
     const photoSize = 300
@@ -465,7 +474,7 @@ export function LifeCard(props: LifeCardProps) {
             />
           </div>
           <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
-            <Footer brand={brand} />
+            <CardFavicon brand={brand} />
           </div>
         </div>
       </div>
@@ -475,7 +484,8 @@ export function LifeCard(props: LifeCardProps) {
   // Variant B: no picture, typographic composition
   const headerH = 410
   const gap = 36
-  const timelineH = CARD_H - PAD * 2 - headerH - gap - 60 - 24
+  const markH = 38
+  const timelineH = CARD_H - PAD * 2 - headerH - gap - markH - 20
   const centered = items.length <= 8
   const tSize = titleSizeFor(title, 96, 14)
   return (
@@ -546,7 +556,7 @@ export function LifeCard(props: LifeCardProps) {
           maxTitle={centered ? 42 : 38}
         />
         <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
-          <Footer brand={brand} />
+          <CardFavicon brand={brand} />
         </div>
       </div>
     </div>

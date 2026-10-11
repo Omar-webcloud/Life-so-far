@@ -198,7 +198,7 @@ export const bn: Dict = {
   cardSettings: 'কার্ডের তথ্য',
   cardTitleLabel: 'কার্ডের শিরোনাম',
   nicknameLabel: 'নাম বা ডাকনাম (ঐচ্ছিক)',
-  nicknamePlaceholder: 'তোমার নাম',
+  nicknamePlaceholder: 'আপনার নাম',
   ageLabel: 'বয়স (ঐচ্ছিক)',
   agePlaceholder: 'যেমন ২৩',
   showAge: 'শিরোনামে বয়স দেখান',
