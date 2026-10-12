@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { dictionaries, type Category, type Dict, type Lang } from './i18n'
+import { dictionaries, sampleMilestones, type Category, type Dict, type Lang } from './i18n'
 
 export type Milestone = {
   id: string
@@ -60,6 +60,7 @@ type Ctx = {
   updateMilestone: (id: string, patch: Partial<Milestone>) => void
   removeMilestone: (id: string) => void
   moveMilestone: (id: string, dir: -1 | 1) => void
+  loadSample: () => void
   resetAll: () => void
 }
 
@@ -147,6 +148,27 @@ export function LifeProvider({ children }: { children: React.ReactNode }) {
     })
   }, [])
 
+  const loadSample = useCallback(() => {
+    setState((s) => {
+      const lang = s.lang
+      const samples: Milestone[] = sampleMilestones.map((m) => ({
+        id: newId(),
+        title: m[lang][0],
+        category: 'personal',
+        when: m.when,
+        description: m[lang][1],
+        emoji: m.emoji,
+        included: true,
+      }))
+      return {
+        ...s,
+        nickname: s.nickname || (lang === 'bn' ? 'আবুল হায়াত' : 'Abul Hayat'),
+        age: s.age || '23',
+        milestones: samples,
+      }
+    })
+  }, [])
+
   const resetAll = useCallback(() => {
     setState((s) => ({ ...DEFAULT_STATE, lang: s.lang }))
     setPhotoState(null)
@@ -175,9 +197,10 @@ export function LifeProvider({ children }: { children: React.ReactNode }) {
       updateMilestone,
       removeMilestone,
       moveMilestone,
+      loadSample,
       resetAll,
     }),
-    [state, photo, photoSaved, hydrated, storage, update, setLang, setPhoto, addMilestone, updateMilestone, removeMilestone, moveMilestone, resetAll],
+    [state, photo, photoSaved, hydrated, storage, update, setLang, setPhoto, addMilestone, updateMilestone, removeMilestone, moveMilestone, loadSample, resetAll],
   )
 
   return <LifeContext.Provider value={value}>{children}</LifeContext.Provider>

@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     template: '%s | Life So Far',
   },
   description:
-    'Create an elegant, shareable timeline of your milestones. 100% private by design: everything stays right in your browser.',
+    'Create an elegant, shareable timeline of your milestones. Completely private: your memories stay safe with you.',
   keywords: [
     'Life So Far',
     'life timeline',
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     siteName: 'Life So Far',
     title: 'Life So Far: Turn Your Chapters into a Story Card Worth Sharing',
     description:
-      'Create an elegant, shareable timeline of your milestones. 100% private by design: everything stays right in your browser.',
+      'Create an elegant, shareable timeline of your milestones. Completely private: your memories stay safe with you.',
     images: [
       {
         url: '/life-so-far-logo.png',
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Life So Far: Turn Your Chapters into a Story Card Worth Sharing',
     description:
-      'Create an elegant, shareable timeline of your milestones. 100% private by design: everything stays right in your browser.',
+      'Create an elegant, shareable timeline of your milestones. Completely private: your memories stay safe with you.',
     images: ['/life-so-far-logo.png'],
   },
   robots: {

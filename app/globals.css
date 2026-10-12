@@ -178,8 +178,74 @@
   --color-ink-soft: #6a6358;
   --color-gold: #b08d4a;
   --color-gold-deep: #85652a;
+  --color-gold-light: #d8be82;
   --font-display: var(--font-playfair), var(--font-noto-serif-bn), Georgia, serif;
   --font-sans: var(--font-inter), var(--font-noto-sans-bn), system-ui, sans-serif;
+}
+
+/* Subtle archival stationery paper texture overlay */
+.bg-paper-grain {
+  background-color: #faf6ec;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(241, 233, 214, 0.7) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(228, 217, 191, 0.45) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(241, 233, 214, 0.5) 0px, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(176, 141, 74, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 20px 20px;
+}
+
+/* Ambient glow accents */
+.glow-gold {
+  box-shadow: 0 0 60px -15px rgba(176, 141, 74, 0.35);
+}
+
+.glow-card {
+  box-shadow: 0 25px 50px -12px rgba(42, 39, 35, 0.14), 0 0 0 1px rgba(176, 141, 74, 0.28);
+}
+
+.glow-card-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glow-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 30px 60px -15px rgba(42, 39, 35, 0.2), 0 0 0 1px rgba(176, 141, 74, 0.45);
+}
+
+/* Custom golden scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(176, 141, 74, 0.3);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(133, 101, 42, 0.6);
+}
+
+/* Gold foil text gradient */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #85652a 0%, #b08d4a 50%, #684f20 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Editorial deckled/filigree border accent */
+.border-filigree {
+  border: 1px solid rgba(176, 141, 74, 0.35);
+  box-shadow: inset 0 0 0 3px rgba(250, 246, 236, 0.7), inset 0 0 0 4px rgba(176, 141, 74, 0.25);
+}
+
+/* Tactile button press */
+.btn-tactile {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+.btn-tactile:active {
+  transform: scale(0.98);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -189,3 +255,4 @@
     scroll-behavior: auto !important;
   }
 }
+
